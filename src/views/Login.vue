@@ -35,8 +35,8 @@ import axios from 'axios'
 import { ElForm, ElMessageBox } from 'element-plus'
 import { useAuthStore } from '../components/auth'
 import Cookies from 'js-cookie'
-// const baseURL = 'https://Aristalisia.com:765/api'
-const baseURL_temp = 'https://47.243.115.22:765/api'
+const baseURL = 'https://Aristalisia.com:765/api'
+
 const router = useRouter()
 const authStore = useAuthStore()
 
@@ -53,7 +53,7 @@ async function handleLogin() {
             if (valid) {
                 try {
                     // 向后端发送用户名、密码和 reCAPTCHA token
-                    const response = await axios.post(`${baseURL_temp}/donder/login`, {
+                    const response = await axios.post(`${baseURL}/donder/login`, {
                         donderUsername: form.value.donderUsername,
                         donderPassword: form.value.donderPassword
                     })

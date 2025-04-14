@@ -1,9 +1,14 @@
 <template>
-  <div class="wrapper">
+  <div class="wrapper" :class="isDarkMode ? 'dark' : 'light'">
     <!-- 顶部 -->
     <header class="header">
       <h1 class="header-title">叽奇NET</h1>
-      <a class="logout-link" @click="logout">退出</a>
+      <div class="header-controls">
+        <button class="theme-toggle" @click="toggleDarkMode" style="outline: none;">
+          {{ isDarkMode ? '🌞' : '🌜' }}
+        </button>
+        <a class="logout-link" @click="logout">退出</a>
+      </div>
     </header>
 
     <div class="main">
@@ -14,21 +19,30 @@
         </div>
         <nav>
           <ul>
-            <li @click="changeContent('home')" :class="{ active: currentContent === 'home' }">首页</li>
-            <li @click="changeContent('profile')" :class="{ active: currentContent === 'profile' }">个人资料</li>
-            <li @click="changeContent('settings')" :class="{ active: currentContent === 'settings' }">账号设置</li>
-            <li @click="changeContent('record')" :class="{ active: currentContent === 'record' }">游玩记录</li>
-            <li @click="changeContent('song_info')" :class="{ active: currentContent === 'song_info' }">乐曲信息</li>
-            <li @click="changeContent('notifications')" :class="{ active: currentContent === 'notifications' }">通知</li>
-          </ul>
+      <li
+        v-for="item in menuItems"
+        :key="item.key"
+        @click="changeContent(item.key)"
+        :class="{ active: currentContent === item.key }"
+      >
+        {{ item.label }}
+      </li>
+    </ul>
         </nav>
       </aside>
 
       <!-- 右侧内容区域 -->
       <main class="content">
-
+        <!-- 首页 -->
         <div v-if="currentContent === 'home'">
+          <h2>公告</h2>
 
+          <div id="announce" style="white-space: pre-line;">{{ home_annouce }}</div>
+
+        </div>
+
+        <!-- 个人资料 -->
+        <div v-if="currentContent === 'profile'">
           <div class="get-token-func">
             <p>获取我的token</p>
             <div class="token-container">
@@ -47,49 +61,102 @@
               {{ isDownloading ? "正在下载，稍安勿躁..." : "点我获取传分工具!" }}
             </button>
           </div>
-
         </div>
 
-        <div v-if="currentContent === 'profile'">这是个人资料页</div>
-        <div v-if="currentContent === 'settings'">这是设置页</div>
-        <div v-if="currentContent === 'record'">这是游玩记录页</div>
-        <div v-if="currentContent === 'song_info'">这是乐曲信息页</div>
-        <div v-if="currentContent === 'notifications'">这是通知页</div>
+        <!-- 账号设置 -->
+        <div v-if="currentContent === 'settings'">
+          这是设置页
+        </div>
+
+        <!-- 游玩记录 -->
+        <div v-if="currentContent === 'record'">
+          这是游玩记录页
+        </div>
+
+        <!-- 乐曲信息 -->
+        <div v-if="currentContent === 'song_info'">
+          这是乐曲信息页
+        </div>
+
+        <!-- 关于叽奇 -->
+        <div v-if="currentContent === 'about'">
+          <h2>更新日志</h2>
+
+          <div id="announce" style="white-space: pre-line;">{{ about_annouce }}</div>
+        </div>
+
       </main>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
+// 从这里开始为网页文本元素
+
+// 首页
+const home_annouce = 
+`欢迎使用叽奇NET, 请前往个人资料获取您的传分token以绑定至bot
+请注意：传分工具下载慢为正常现象，请耐心等待`
+
+// 关于叽奇
+const about_annouce = 
+`[2025/4/11]  实现了深色模式切换功能`
+
+
+// 从这里开始为逻辑代码
+
+import { onMounted, ref } from 'vue'
 import Cookies from 'js-cookie'
 import axios from 'axios'
 import { ElMessageBox } from 'element-plus'
 
-// const baseURL = 'https://Aristalisia.com:765/api'
-const baseURL_temp = 'https://47.243.115.22:765/api'
+const baseURL = 'https://Aristalisia.com:765/api'
+
 
 
 const user = ref({                    // 用户cookies信息
   username: Cookies.get('username') || '游客',
 })
 const isDownloading = ref(false)      // 全局下载状态变量
-const currentContent = ref('home')    // 当前页面内容
 const token = ref('')                 // token        
 const showToken = ref(false);         // token切换
+const isDarkMode = ref(false)
+// 当前选中内容
+const currentContent = ref<'home'|'profile'|'settings'|'record'|'song_info'|'about'>('home')
+
+// 菜单配置数组
+const menuItems = [
+  { key: 'home',       label: '首页' },
+  { key: 'profile',    label: '个人资料' },
+  { key: 'settings',   label: '账号设置' },
+  { key: 'record',     label: '游玩记录' },
+  { key: 'song_info',  label: '乐曲信息' },
+  { key: 'about', label: '关于叽奇' },
+] as const
 
 // 切换显示内容
-const changeContent = (content: string) => {
+const changeContent = (content: typeof menuItems[number]['key']) => {
   currentContent.value = content
 }
 
+// 初始化时从 localStorage 读取用户偏好
+onMounted(() => {
+  const stored = localStorage.getItem('isDarkMode')
+  isDarkMode.value = stored === 'true'
+})
+
+// 切换深色模式
+const toggleDarkMode = () => {
+  isDarkMode.value = !isDarkMode.value
+  localStorage.setItem('isDarkMode', isDarkMode.value.toString())
+}
+
+
 // 登出
 const logout = async () => {
-  await Cookies.remove('username')
-  await Cookies.remove('token').then(() => {
-    window.location.href = '/'
-  })
-
+  Cookies.remove('username')
+  Cookies.remove('token')
+  window.location.href = '/'
 }
 
 
@@ -107,7 +174,7 @@ const toggleShowToken = () => {
 const fetchToken = async () => {
   const currentUsername = Cookies.get('username')
   try {
-    const response = await axios.post(`${baseURL_temp}/donder/get_donder_data`, {
+    const response = await axios.post(`${baseURL}/donder/get_donder_data`, {
       "donderUsername": currentUsername
     })
 
@@ -138,7 +205,7 @@ const fetchUploadTool = async (): Promise<void> => {
   try {
     isDownloading.value = true // 设置状态为正在下载
 
-    const response = await axios.get(`${baseURL_temp}/tool/get_upload_tool_path`, {
+    const response = await axios.get(`${baseURL}/tool/get_upload_tool_path`, {
       responseType: "blob",
     })
 
@@ -167,6 +234,36 @@ const fetchUploadTool = async (): Promise<void> => {
 </script>
 
 <style scoped lang="scss">
+/* 定义 CSS 变量 */
+.light {
+  --bg-color: #ffffff;
+  --text-color: #333333;
+  --header-bg: #ffffff;
+  --header-text: #3A8EE6;
+  --sidebar-bg: #ffffff;
+  --content-bg: #F5F7FA;
+  --card-bg: #F5F7FA;
+  --box-shadow: rgba(0, 0, 0, 0.1);
+  --link-color: #3A8EE6;
+  --link-hover: #5DAEFF;
+  --hover-bg: #F5F7FA;
+}
+
+/* 深色模式变量覆盖 */
+.dark {
+  --bg-color: #1e1e1e;
+  --text-color: #e0e0e0;
+  --header-bg: #2a2a2a;
+  --header-text: #8ab4f8;
+  --sidebar-bg: #252526;
+  --content-bg: #2d2d2d;
+  --card-bg: #333333;
+  --box-shadow: rgba(0, 0, 0, 0.5);
+  --link-color: #8ab4f8;
+  --link-hover: #a6c8ff;
+  --hover-bg: #3a3d41;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -178,6 +275,8 @@ body {
   font-family: Arial, sans-serif;
   height: 100vh;
   overflow: hidden;
+  background-color: var(--bg-color);
+  color: var(--text-color);
 }
 
 .wrapper {
@@ -190,52 +289,72 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #ffffff;
-  color: #3A8EE6;
+  background-color: var(--header-bg);
+  color: var(--header-text);
   padding: 2vh 2vw;
-  box-shadow: 0 0.5vw 1vw rgba(0, 0, 0, 0.1);
   flex-shrink: 0;
-  border-bottom: 1px solid #e0e0e0;
+  box-shadow: 0 0.5vw 1vw var(--box-shadow);
+  border-bottom: 1px solid var(--hover-bg);
 }
 
 .header-title {
   font-size: 2vh;
-  margin: 0;
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.theme-toggle {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0 10px;
+  color: var(--text-color);
+  transition: transform 0.3s;
+
+  &:hover {
+    transform: scale(1.1);
+  }
 }
 
 .logout-link {
   font-size: 1.5vh;
-  color: #3A8EE6;
+  color: var(--link-color);
   text-decoration: none;
   cursor: pointer;
   transition: color 0.3s;
-}
-
-.logout-link:hover {
-  color: #5DAEFF;
+  &:hover{
+    color: var(--link-hover);
+    transform: scale(1.05);
+  }
 }
 
 .main {
   display: flex;
   flex: 1;
   height: calc(100vh - 8vh);
+  color: var(--text-color);
 }
 
 .sidebar {
   width: 15vw;
-  background-color: #ffffff;
-  color: #333;
+  background-color: var(--sidebar-bg);
+  color: var(--text-color);
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  border-right: 1px solid #e0e0e0;
+  border-right: 1px solid var(--hover-bg);
 }
 
 .user-info {
   text-align: center;
   padding: 2vh 1vw;
-  background-color: #F5F7FA;
-  border-bottom: 1px solid #e0e0e0;
+  background-color: var(--content-bg);
+  border-bottom: 1px solid var(--hover-bg);
   flex-shrink: 0;
   font-family: Electrolize;
 }
@@ -257,32 +376,32 @@ nav li {
   cursor: pointer;
   text-align: center;
   font-size: 1.8vh;
-  transition: background-color 0.3s, color 0.3s;
-  color: #333;
-}
-
-nav li:hover {
-  background-color: #F5F7FA;
-  color: #3A8EE6;
+  transition: transform 0.3s, color 0.3s;
+  color: var(--text-color);
+  &:hover {
+    background-color: var(--hover-bg);
+    color: var(--link-color);
+  transform: scale(1.05);
+  }
 }
 
 nav li.active {
-  background-color: #409EFF;
+  background-color: var(--link-color);
   color: white;
 }
 
 .content {
   flex: 1;
-  background-color: #ffffff;
+  background-color: var(--content-bg);
   padding: 2vh 2vw;
   overflow-y: auto;
 }
 
 .content>div {
-  background-color: #F5F7FA;
+  background-color: var(--card-bg);
   padding: 2vh 2vw;
   border-radius: 0.8vh;
-  box-shadow: 0 0 1vw rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 1vw var(--box-shadow);
 }
 
 .token-container {
@@ -314,7 +433,6 @@ nav li.active {
   border-radius: 4px;
   font-size: 1rem;
   cursor: pointer;
-  background-color: #3A8EE6;
   color: white;
   margin-right: 0.5rem;
   transition: background-color 0.3s;
@@ -324,6 +442,10 @@ nav li.active {
 .toggle-button:hover,
 .copy-button:hover,
 .fetch-button:hover {
+  background-color: #5DAEFF;
+}
+
+.toggle-button {
   background-color: #5DAEFF;
 }
 
@@ -353,28 +475,8 @@ nav li.active {
 
 
 @media (max-width: 768px) {
-  .wrapper {
-    flex-direction: column;
-  }
-
-  .sidebar {
-    width: 100%;
-    display: flex;
-    overflow-x: auto;
-    white-space: nowrap;
-    border-right: none;
-    border-bottom: 1px solid #e0e0e0;
-  }
-
-  .content {
-    flex: 1;
-    padding: 1vh 1vw;
-  }
-}
-
-@media (max-width: 768px) {
-  html {
-    font-size: 14px;
-  }
+  html { font-size: 14px; }
+  .sidebar { width: 100%; overflow-x: auto; border-right: none; border-bottom: 1px solid var(--hover-bg); }
+  .content { padding: 1vh 1vw; }
 }
 </style>

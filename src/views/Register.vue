@@ -34,8 +34,7 @@ import { ref } from 'vue'
 import axios from 'axios'
 import router from '../router'
 
-// const baseURL = 'https://Aristalisia.com:765/api'
-const baseURL_temp = 'https://47.243.115.22:765/api'
+const baseURL = 'https://Aristalisia.com:765/api'
 
 const goToLogin = () => {
     router.push('/')
@@ -92,7 +91,7 @@ const handleRegister = async () => {
     formRef.value.validate(async (valid) => {
       if (valid) {
         try {
-          const response = await axios.post(`${baseURL_temp}/donder/register`, {
+          const response = await axios.post(`${baseURL}/donder/register`, {
             donderUsername: form.value.donderUsername,
             donderPassword: form.value.donderPassword
           })
