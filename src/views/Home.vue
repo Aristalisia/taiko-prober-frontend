@@ -97,11 +97,15 @@
 // 首页
 const home_annouce = 
 `欢迎使用叽奇NET, 请前往个人资料获取您的传分token以绑定至bot
-请注意：传分工具下载慢为正常现象，请耐心等待`
+请注意：传分工具下载慢为正常现象，请耐心等待
+
+什么？你想用但是不知道哪有bot？
+叽奇dev聊天吹水群：1021996689，欢迎来玩！`
 
 // 关于叽奇
 const about_annouce = 
-`[2025/4/11]  实现了深色模式切换功能`
+`[2025/4/11]  实现了深色模式切换功能
+[2025/4/15]  搭建了基础的查询游玩记录框架`
 
 
 // 从这里开始为逻辑代码
@@ -141,17 +145,23 @@ const changeContent = (content: typeof menuItems[number]['key']) => {
   currentContent.value = content
 }
 
-// 初始化时从 localStorage 读取用户偏好
+// 在组件挂载时检查并应用本地存储的主题设置
 onMounted(() => {
-  const stored = localStorage.getItem('isDarkMode')
-  isDarkMode.value = stored === 'true'
-})
+  const savedTheme = localStorage.getItem('isDarkMode');
+  if (savedTheme !== null) {
+    isDarkMode.value = savedTheme === 'true';
+  } else {
+    // 如果本地没有保存设置，可以根据系统主题偏好来设置
+    const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    isDarkMode.value = prefersDarkScheme;
+  }
+});
 
 // 切换深色模式
 const toggleDarkMode = () => {
-  isDarkMode.value = !isDarkMode.value
-  localStorage.setItem('isDarkMode', isDarkMode.value.toString())
-}
+  isDarkMode.value = !isDarkMode.value;
+  localStorage.setItem('isDarkMode', isDarkMode.value.toString()); // 保存主题设置
+};
 
 
 // 登出
