@@ -70,7 +70,8 @@
 
         <!-- 游玩记录 -->
         <div v-if="currentContent === 'record'">
-          这是游玩记录页
+          <RecentRecord :token="token" />
+
         </div>
 
         <!-- 乐曲信息 -->
@@ -109,6 +110,7 @@ import { onMounted, ref } from 'vue'
 import Cookies from 'js-cookie'
 import axios from 'axios'
 import { ElMessageBox } from 'element-plus'
+import RecentRecord from '../components/RecentRecord.vue'
 
 const baseURL = 'https://Aristalisia.com:765/api'
 
