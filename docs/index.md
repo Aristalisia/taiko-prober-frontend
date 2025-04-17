@@ -8,6 +8,9 @@ hero:
     - theme: brand
       text: 快速开始
       link: ./guide/
+    - theme: alt
+      text: 前往主站
+      link: https://Aristalisia.com
   image:
-      src: ./images/叽奇_BG.png
+      src: /images/叽奇_BG.png
 

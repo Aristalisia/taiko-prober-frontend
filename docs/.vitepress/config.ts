@@ -1,14 +1,15 @@
 import { defineConfig } from 'vitepress'
 
 export default defineConfig({
+  base: '/docs/',
   title: '叽奇NET',
   description: '敲击太鼓开始游戏',
   themeConfig: {
-    logo: '/images/logo.png',
+    logo: '/docs/images/logo.png',
     nav: [
       { text: '欢迎', link: '/' },
-      { text: '开始使用', link: '/getting-started' },
-      { text: '常见问题', link: '/faq' }
+      { text: '开始使用', link: 'getting-started' },
+      { text: '常见问题', link: 'faq' }
     ],
     search: {
         provider: 'algolia',
